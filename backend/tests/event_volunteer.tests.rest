@@ -1,0 +1,139 @@
+@baseUrl = http://localhost:3000
+@contentType = application/json
+@adminEmail = admin@ifrs.edu.br
+# Use a mesma senha configurada em ADMIN_PASSWORD no backend/.env
+@adminSenha = 123456
+
+### ----------------------------------------------------
+### AUTENTICACAO
+### ----------------------------------------------------
+
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "senha": "{{adminSenha}}"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+### ----------------------------------------------------
+### DADOS DE TESTE
+### ----------------------------------------------------
+
+# @name criarVoluntario
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "nome": "Voluntario da Inscricao",
+  "email": "voluntario.inscricao@ifrs.edu.br",
+  "senha": "senha123",
+  "telefone": "54955555555",
+  "role": "voluntario"
+}
+
+###
+@usuarioId = {{criarVoluntario.response.body.user.id}}
+@usuarioEmail = voluntario.inscricao@ifrs.edu.br
+@usuarioSenha = senha123
+
+### Login do voluntario de teste
+# @name loginVoluntario
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{usuarioEmail}}",
+  "senha": "{{usuarioSenha}}"
+}
+
+###
+@tokenVoluntario = {{loginVoluntario.response.body.token}}
+
+# @name criarEvento
+POST {{baseUrl}}/events
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Evento de Inscricao",
+  "descricao": "Evento criado para testar inscricoes.",
+  "local": "Campus Bento Goncalves",
+  "data_inicio": "2026-12-22 08:00:00",
+  "data_fim": "2026-12-22 12:00:00",
+  "limite_voluntarios": 20,
+  "status": "agendado"
+}
+
+###
+@eventoId = {{criarEvento.response.body.event.id}}
+
+### ----------------------------------------------------
+### CENARIOS DE AUTORIZACAO
+### ----------------------------------------------------
+
+### Sem token - deve retornar 401
+POST {{baseUrl}}/events/{{eventoId}}/volunteers
+Content-Type: {{contentType}}
+
+### Admin tentando se inscrever - deve retornar 403
+POST {{baseUrl}}/events/{{eventoId}}/volunteers
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+### ----------------------------------------------------
+### INSCRICAO
+### ----------------------------------------------------
+
+### Voluntario realizando inscricao
+# @name criarInscricao
+POST {{baseUrl}}/events/{{eventoId}}/volunteers
+Authorization: Bearer {{tokenVoluntario}}
+Content-Type: {{contentType}}
+
+### Listar inscritos - apenas admin
+GET {{baseUrl}}/events/{{eventoId}}/volunteers
+Authorization: Bearer {{tokenAdmin}}
+
+### Inscricao duplicada - deve retornar 409
+POST {{baseUrl}}/events/{{eventoId}}/volunteers
+Authorization: Bearer {{tokenVoluntario}}
+Content-Type: {{contentType}}
+
+### Cancelar propria inscricao
+DELETE {{baseUrl}}/events/{{eventoId}}/volunteers/me
+Authorization: Bearer {{tokenVoluntario}}
+
+### Cancelar inscricao inexistente - deve retornar 404
+DELETE {{baseUrl}}/events/{{eventoId}}/volunteers/me
+Authorization: Bearer {{tokenVoluntario}}
+
+### ----------------------------------------------------
+### REGRAS DO EVENTO
+### ----------------------------------------------------
+
+### Finalizar evento - apenas admin
+PUT {{baseUrl}}/events/{{eventoId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "status": "finalizado"
+}
+
+### Inscricao em evento finalizado - deve retornar 409
+POST {{baseUrl}}/events/{{eventoId}}/volunteers
+Authorization: Bearer {{tokenVoluntario}}
+Content-Type: {{contentType}}
+
+### ----------------------------------------------------
+### LIMPEZA
+### ----------------------------------------------------
+
+### Excluir evento de teste - apenas admin
+DELETE {{baseUrl}}/events/{{eventoId}}
+Authorization: Bearer {{tokenAdmin}}

@@ -1,0 +1,230 @@
+const UserModel = require('../models/userModel')
+const validateLogin = require('../utils/validateLogin')
+const validateEmail = require('../utils/validateEmail')
+const validateString = require('../utils/validateString')
+const validateTelefone = require('../utils/validateTelefone')
+const AppError = require('../utils/appError')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+
+const rolesPermitidas = ['admin', 'voluntario']
+
+function validarId(id) {
+  if (!/^\d+$/.test(String(id)) || Number(id) <= 0) {
+    throw new AppError('ID do usuário inválido')
+  }
+}
+
+function validarNome(nome) {
+  const erro = validateString(nome, { min: 1, max: 100, fieldName: 'nome' })
+  if (erro) {
+    throw new AppError(erro)
+  }
+  return nome.trim()
+}
+
+function validarEmailUsuario(email) {
+  if (!validateEmail(email)) {
+    throw new AppError('Email inválido')
+  }
+  return email.trim().toLowerCase()
+}
+
+function validarSenha(senha) {
+  const erro = validateString(senha, { min: 6, max: 255, fieldName: 'senha' })
+  if (erro) {
+    throw new AppError(erro)
+  }
+}
+
+function validarTelefoneUsuario(telefone) {
+  if (telefone !== null && telefone !== undefined && !validateTelefone(telefone)) {
+    throw new AppError('Telefone inválido: informe apenas 10 ou 11 dígitos')
+  }
+  return telefone || null
+}
+
+function normalizarRole(role, usuarioLogado) {
+  if (role === undefined || role === null || role === '') {
+    return 'voluntario'
+  }
+
+  if (typeof role !== 'string') {
+    throw new AppError('Role deve ser uma string')
+  }
+
+  const roleNormalizada = role.trim().toLowerCase()
+  if (!rolesPermitidas.includes(roleNormalizada)) {
+    throw new AppError('Role deve ser "admin" ou "voluntario"')
+  }
+
+  if (roleNormalizada === 'admin' && usuarioLogado?.role !== 'admin') {
+    throw new AppError('Apenas administradores podem definir a role admin', 403)
+  }
+
+  return roleNormalizada
+}
+
+class UserService {
+  static async login(data) {
+    const erroLogin = validateLogin(data)
+    if (erroLogin) {
+      throw new AppError(erroLogin)
+    }
+
+    const email = data.email.trim().toLowerCase()
+    const usuario = await UserModel.findByEmail(email)
+
+    if (!usuario) {
+      throw new AppError('Email ou senha incorretos', 401)
+    }
+
+    const senhaValida = await bcrypt.compare(data.senha, usuario.senha_hash)
+    if (!senhaValida) {
+      throw new AppError('Email ou senha incorretos', 401)
+    }
+
+    const token = jwt.sign({ userId: usuario.id, email: usuario.email, role: usuario.role }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    })
+
+    return { token }
+  }
+
+  static async getAllUsers() {
+    const users = await UserModel.findAll()
+    if (users.length === 0) {
+      throw new AppError('Nenhum usuário encontrado', 404)
+    }
+    return users
+  }
+
+  static async getUserById(id, usuarioLogado) {
+    validarId(id)
+
+    if (!usuarioLogado) {
+      throw new AppError('Usuário não autenticado', 401)
+    }
+
+    if (usuarioLogado.role !== 'admin' && String(usuarioLogado.userId) !== String(id)) {
+      throw new AppError('Acesso negado: você só pode visualizar o seu próprio perfil', 403)
+    }
+
+    const user = await UserModel.findById(id)
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404)
+    }
+
+    const usuarioSemSenha = { ...user }
+    delete usuarioSemSenha.senha_hash
+    return usuarioSemSenha
+  }
+
+  static async findUserByEmail(email) {
+    const emailNormalizado = validarEmailUsuario(email)
+    const user = await UserModel.findByEmail(emailNormalizado)
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404)
+    }
+
+    const usuarioSemSenha = { ...user }
+    delete usuarioSemSenha.senha_hash
+    return usuarioSemSenha
+  }
+
+  static async createUser(data, usuarioLogado) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new AppError('Corpo da requisição é obrigatório')
+    }
+
+    const camposObrigatorios = ['nome', 'email', 'senha']
+    for (const campo of camposObrigatorios) {
+      if (!data[campo]) {
+        throw new AppError(`${campo} é obrigatório`)
+      }
+    }
+
+    const nome = validarNome(data.nome)
+    const email = validarEmailUsuario(data.email)
+    validarSenha(data.senha)
+    const telefone = validarTelefoneUsuario(data.telefone)
+    const role = normalizarRole(data.role, usuarioLogado)
+
+    const existingUser = await UserModel.findByEmail(email)
+    if (existingUser) {
+      throw new AppError('E-mail já cadastrado', 409)
+    }
+
+    const senhaHash = await bcrypt.hash(data.senha, 10)
+    const userId = await UserModel.create({ nome, email, senhaHash, telefone, role })
+    return await UserModel.findById(userId)
+  }
+
+  static async updateUser(id, data, usuarioLogado) {
+    validarId(id)
+
+    if (!usuarioLogado) {
+      throw new AppError('Usuário não autenticado', 401)
+    }
+
+    if (usuarioLogado.role !== 'admin' && String(usuarioLogado.userId) !== String(id)) {
+      throw new AppError('Acesso negado: você só pode atualizar o seu próprio perfil', 403)
+    }
+
+    const user = await UserModel.findById(id)
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404)
+    }
+
+    if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length === 0) {
+      throw new AppError('Nenhum campo para atualizar')
+    }
+
+    const payload = {}
+
+    if (data.nome !== undefined) {
+      payload.nome = validarNome(data.nome)
+    }
+
+    if (data.email !== undefined) {
+      payload.email = validarEmailUsuario(data.email)
+      const existingUser = await UserModel.findByEmail(payload.email)
+      if (existingUser && String(existingUser.id) !== String(id)) {
+        throw new AppError('E-mail já cadastrado', 409)
+      }
+    }
+
+    if (data.senha !== undefined) {
+      validarSenha(data.senha)
+      payload.senha_hash = await bcrypt.hash(data.senha, 10)
+    }
+
+    if (data.telefone !== undefined) {
+      payload.telefone = validarTelefoneUsuario(data.telefone)
+    }
+
+    if (data.role !== undefined) {
+      payload.role = normalizarRole(data.role, usuarioLogado)
+    }
+
+    if (Object.keys(payload).length === 0) {
+      throw new AppError('Nenhum campo válido para atualizar')
+    }
+
+    await UserModel.update(id, payload)
+    return await UserModel.findById(id)
+  }
+
+  static async deleteUser(id) {
+    validarId(id)
+
+    const user = await UserModel.findById(id)
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404)
+    }
+
+    return await UserModel.delete(id)
+  }
+}
+
+module.exports = UserService

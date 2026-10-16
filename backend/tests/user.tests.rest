@@ -1,0 +1,148 @@
+@baseUrl = http://localhost:3000
+@contentType = application/json
+@adminEmail = admin@ifrs.edu.br
+# Use a mesma senha configurada em ADMIN_PASSWORD no backend/.env
+@adminSenha = 123456
+
+### ----------------------------------------------------
+### AUTENTICACAO
+### ----------------------------------------------------
+
+# @name loginAdmin
+# Realizar login do administrador inicial
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "senha": "{{adminSenha}}"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+### ----------------------------------------------------
+### CADASTRO DE USUARIO
+### ----------------------------------------------------
+
+# @name criarUsuario
+# Cadastro publico de voluntario
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "nome": "Voluntario de Teste",
+  "email": "voluntario.teste@ifrs.edu.br",
+  "senha": "senha123",
+  "telefone": "54911111111",
+  "role": "voluntario"
+}
+
+###
+@usuarioId = {{criarUsuario.response.body.user.id}}
+@usuarioEmail = voluntario.teste@ifrs.edu.br
+@usuarioSenha = senha123
+
+### ----------------------------------------------------
+### ROTAS PROTEGIDAS
+### ----------------------------------------------------
+
+### Listar usuarios - apenas admin
+GET {{baseUrl}}/users
+Authorization: Bearer {{tokenAdmin}}
+
+### Buscar usuario por ID - admin
+GET {{baseUrl}}/users/{{usuarioId}}
+Authorization: Bearer {{tokenAdmin}}
+
+### Atualizar usuario - admin
+PUT {{baseUrl}}/users/{{usuarioId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "Voluntario Atualizado",
+  "telefone": "54922222222"
+}
+
+### Login do voluntario criado
+# @name loginUsuario
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{usuarioEmail}}",
+  "senha": "{{usuarioSenha}}"
+}
+
+###
+@tokenUsuario = {{loginUsuario.response.body.token}}
+
+### Buscar proprio perfil - voluntario autenticado
+GET {{baseUrl}}/users/{{usuarioId}}
+Authorization: Bearer {{tokenUsuario}}
+
+### Atualizar proprio perfil - voluntario autenticado
+PUT {{baseUrl}}/users/{{usuarioId}}
+Authorization: Bearer {{tokenUsuario}}
+Content-Type: {{contentType}}
+
+{
+  "nome": "Voluntario Atualizado pelo Proprio Usuario"
+}
+
+### ----------------------------------------------------
+### CENARIOS DE ERRO
+### ----------------------------------------------------
+
+### Login com senha incorreta
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "senha": "senha_incorreta"
+}
+
+### Listagem sem token
+GET {{baseUrl}}/users
+
+### Voluntario tentando listar todos os usuarios
+GET {{baseUrl}}/users
+Authorization: Bearer {{tokenUsuario}}
+
+### Cadastro de admin sem autenticacao administrativa
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "nome": "Admin Nao Autorizado",
+  "email": "admin.nao.autorizado@ifrs.edu.br",
+  "senha": "senha123",
+  "telefone": "54933333333",
+  "role": "admin"
+}
+
+### Email duplicado
+POST {{baseUrl}}/users
+Content-Type: {{contentType}}
+
+{
+  "nome": "Voluntario Duplicado",
+  "email": "{{usuarioEmail}}",
+  "senha": "senha123",
+  "telefone": "54944444444",
+  "role": "voluntario"
+}
+
+### Usuario inexistente
+GET {{baseUrl}}/users/999999
+Authorization: Bearer {{tokenAdmin}}
+
+### ----------------------------------------------------
+### EXCLUSAO
+### ----------------------------------------------------
+
+### Excluir usuario - apenas admin
+DELETE {{baseUrl}}/users/{{usuarioId}}
+Authorization: Bearer {{tokenAdmin}}

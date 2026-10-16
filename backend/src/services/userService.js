@@ -3,17 +3,12 @@ const validateLogin = require('../utils/validateLogin')
 const validateEmail = require('../utils/validateEmail')
 const validateString = require('../utils/validateString')
 const validateTelefone = require('../utils/validateTelefone')
+const validateId = require('../utils/validateId')
 const AppError = require('../utils/appError')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
 const rolesPermitidas = ['admin', 'voluntario']
-
-function validarId(id) {
-  if (!/^\d+$/.test(String(id)) || Number(id) <= 0) {
-    throw new AppError('ID do usuário inválido')
-  }
-}
 
 function validarNome(nome) {
   const erro = validateString(nome, { min: 1, max: 100, fieldName: 'nome' })
@@ -100,7 +95,9 @@ class UserService {
   }
 
   static async getUserById(id, usuarioLogado) {
-    validarId(id)
+    if (!validateId(id)) {
+      throw new AppError('ID do usuário inválido')
+    }
 
     if (!usuarioLogado) {
       throw new AppError('Usuário não autenticado', 401)
@@ -161,7 +158,9 @@ class UserService {
   }
 
   static async updateUser(id, data, usuarioLogado) {
-    validarId(id)
+    if (!validateId(id)) {
+      throw new AppError('ID do usuário inválido')
+    }
 
     if (!usuarioLogado) {
       throw new AppError('Usuário não autenticado', 401)
@@ -216,7 +215,9 @@ class UserService {
   }
 
   static async deleteUser(id) {
-    validarId(id)
+    if (!validateId(id)) {
+      throw new AppError('ID do usuário inválido')
+    }
 
     const user = await UserModel.findById(id)
     if (!user) {

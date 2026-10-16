@@ -88,27 +88,26 @@ END$$
 
 DELIMITER ;
 
--- senha: 123456
 INSERT INTO usuarios (nome, email, senha_hash, telefone, role)
 VALUES
     (
         'Ana Souza',
         'ana.souza@ifrs.edu.br',
-        '$scrypt$N=16384,r=8,p=1$9K3fjdvwwqyrjFHkM93kSQ$thQ11n0wvQlk08HR0lxb+kPUkG3h1RN+5hsDYksqTdK0mpDFwQHpGbXci5WAgv+v7VGE998OmMg1RWFNJISCmQ==',
+        '$2b$10$HCajla3KjpVT7Vwh0LcR8OvGl6AAU3Jf1MuFIHRaq8OZBtMfA59va',
         '(54) 99999-1001',
         'voluntario'
     ),
     (
         'Bruno Lima',
         'bruno.lima@ifrs.edu.br',
-        '$scrypt$N=16384,r=8,p=1$foDItEj3Zgs_grN3AGKRLQ$Ekcrz1Or2aIUuDBYp/04m58qomA4bIKVe49eCLzxAQnyM1sz4xdFX+PuHbQez++EOPdLQXMBpZx59yjKntgoNw==',
+        '$2b$10$p75ldrHDfbANdZgDSygP4ugrtNsOJZi.tVVucFbEn90n/yExSEoou',
         '(54) 99999-1002',
         'voluntario'
     ),
     (
         'Carla Mendes',
         'carla.mendes@ifrs.edu.br',
-        '$scrypt$N=16384,r=8,p=1$fHjEAFeGgaWpJMUYzKfd6Q$7cmRmCEJmv4QK0OmsQRMudWKdIZIjzT7D2SpJUZmIqZS6luLkvUp2TWXkoU6h8WupAuvXZT6YzGUB3ujdUAWjg==',
+        '$2b$10$Nx28JlCxG7eDQnCD8pnc6OIR8JCSiLvVB6sSA3cN6SG9CDAeu/9ka',
         '(54) 99999-1003',
         'voluntario'
     );

@@ -1,0 +1,130 @@
+@baseUrl = http://localhost:3000
+@contentType = application/json
+@adminEmail = admin@ifrs.edu.br
+# Use a mesma senha configurada em ADMIN_PASSWORD no backend/.env
+@adminSenha = 123456
+
+### ----------------------------------------------------
+### AUTENTICACAO
+### ----------------------------------------------------
+
+# @name loginAdmin
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "{{adminEmail}}",
+  "senha": "{{adminSenha}}"
+}
+
+###
+@tokenAdmin = {{loginAdmin.response.body.token}}
+
+### Login de usuario voluntario semeado no banco
+# @name loginVoluntario
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "ana.souza@ifrs.edu.br",
+  "senha": "123456"
+}
+
+###
+@tokenVoluntario = {{loginVoluntario.response.body.token}}
+
+### Usuario comum tentando criar evento - deve retornar 403
+POST {{baseUrl}}/events
+Authorization: Bearer {{tokenVoluntario}}
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Evento criado por voluntario",
+  "local": "Campus",
+  "data_inicio": "2026-12-21 08:00:00",
+  "data_fim": "2026-12-21 12:00:00"
+}
+
+### ----------------------------------------------------
+### ROTAS PUBLICAS
+### ----------------------------------------------------
+
+### Listar eventos
+GET {{baseUrl}}/events
+
+### Criar evento - sem autenticacao, deve retornar 401
+POST {{baseUrl}}/events
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Evento sem autenticacao",
+  "descricao": "Este evento nao deve ser criado.",
+  "local": "Campus",
+  "data_inicio": "2026-12-20 08:00:00",
+  "data_fim": "2026-12-20 12:00:00",
+  "limite_voluntarios": 20,
+  "status": "agendado"
+}
+
+### ----------------------------------------------------
+### CRUD DE EVENTOS
+### ----------------------------------------------------
+
+# @name criarEvento
+POST {{baseUrl}}/events
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Evento de Teste",
+  "descricao": "Evento criado para testar a API.",
+  "local": "Campus Bento Goncalves",
+  "data_inicio": "2026-12-20 08:00:00",
+  "data_fim": "2026-12-20 12:00:00",
+  "limite_voluntarios": 20,
+  "status": "agendado"
+}
+
+###
+@eventoId = {{criarEvento.response.body.event.id}}
+
+### Buscar evento por ID
+GET {{baseUrl}}/events/{{eventoId}}
+
+### Atualizar evento - apenas admin
+PUT {{baseUrl}}/events/{{eventoId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Evento de Teste Atualizado",
+  "limite_voluntarios": 30
+}
+
+### Status inválido
+PUT {{baseUrl}}/events/{{eventoId}}
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "status": "cancelado"
+}
+
+### Data de término anterior ao início
+POST {{baseUrl}}/events
+Authorization: Bearer {{tokenAdmin}}
+Content-Type: {{contentType}}
+
+{
+  "titulo": "Evento com Data Invalida",
+  "local": "Campus",
+  "data_inicio": "2026-12-20 12:00:00",
+  "data_fim": "2026-12-20 08:00:00"
+}
+
+### Evento inexistente
+GET {{baseUrl}}/events/999999
+
+### Excluir evento - apenas admin
+DELETE {{baseUrl}}/events/{{eventoId}}
+Authorization: Bearer {{tokenAdmin}}

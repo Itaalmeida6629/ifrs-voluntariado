@@ -70,11 +70,7 @@ function validarDescricao(descricao) {
 
 class EventService {
   static async getAllEvents() {
-    const events = await EventModel.findAll()
-    if (events.length === 0) {
-      throw new AppError('Nenhum evento encontrado', 404)
-    }
-    return events
+    return await EventModel.findAll()
   }
 
   static async getEventById(id) {

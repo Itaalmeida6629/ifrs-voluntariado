@@ -30,6 +30,41 @@ a {
   min-height: 100vh;
 }
 
+.barra-navegacao {
+  border-bottom: 1px solid #dbe3ec;
+  background: #ffffff;
+}
+
+.navegacao-conteudo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100%, 1120px);
+  min-height: 64px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.marca {
+  color: #1f5f8b;
+  font-weight: 700;
+}
+
+.links-navegacao {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.link-navegacao {
+  color: #64748b;
+}
+
+.link-navegacao.active,
+.link-navegacao:hover {
+  color: #1f5f8b;
+}
+
 .layout-principal {
   min-height: 100vh;
   padding: 32px 20px;
@@ -56,7 +91,102 @@ a {
   color: #64748b;
 }
 
+.formulario-container {
+  max-width: 480px;
+}
+
+.formulario {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  text-align: left;
+}
+
+.campo {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-weight: 600;
+}
+
+.campo input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+.campo input:focus {
+  border-color: #1f5f8b;
+  outline: 2px solid rgb(31 95 139 / 16%);
+}
+
+.botao-principal,
+.botao-secundario {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+}
+
+.botao-principal {
+  background: #1f5f8b;
+  color: #ffffff;
+}
+
+.botao-principal:hover {
+  background: #17496c;
+}
+
+.botao-principal:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.botao-secundario {
+  background: #e8eef5;
+  color: #1f5f8b;
+}
+
+.mensagem-erro,
+.mensagem-sucesso {
+  margin-top: 16px !important;
+  font-weight: 600;
+}
+
+.mensagem-erro {
+  color: #b42318 !important;
+}
+
+.mensagem-sucesso {
+  color: #26734d !important;
+}
+
+.texto-rodape {
+  margin-top: 20px !important;
+  font-size: 0.95rem;
+}
+
+.texto-rodape a {
+  color: #1f5f8b;
+  font-weight: 600;
+}
+
 @media (max-width: 600px) {
+  .navegacao-conteudo {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 12px;
+  }
+
+  .links-navegacao {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
   .layout-principal {
     padding: 20px 12px;
   }

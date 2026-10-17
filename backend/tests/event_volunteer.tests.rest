@@ -25,7 +25,7 @@ Content-Type: {{contentType}}
 ### ----------------------------------------------------
 
 # @name criarVoluntario
-POST {{baseUrl}}/users
+POST {{baseUrl}}/volunteers
 Content-Type: {{contentType}}
 
 {

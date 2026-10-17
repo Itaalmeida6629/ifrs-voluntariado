@@ -5,7 +5,7 @@ const express = require('express')
 const router = express.Router()
 
 router.post('/auth/login', UserController.login)
-router.post('/users', UserController.createUser)
+router.post('/volunteers', UserController.createUser)
 
 router.put('/users/:id', authenticateToken, UserController.updateUser)
 router.get('/users/:id', authenticateToken, UserController.getUserById)

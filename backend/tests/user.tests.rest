@@ -27,7 +27,7 @@ Content-Type: {{contentType}}
 
 # @name criarUsuario
 # Cadastro publico de voluntario
-POST {{baseUrl}}/users
+POST {{baseUrl}}/volunteers
 Content-Type: {{contentType}}
 
 {
@@ -124,7 +124,7 @@ Content-Type: {{contentType}}
 }
 
 ### Email duplicado
-POST {{baseUrl}}/users
+POST {{baseUrl}}/volunteers
 Content-Type: {{contentType}}
 
 {

@@ -24,8 +24,14 @@ function VolunteerForm({ voluntario, onSubmit, onCancel }) {
       return 'Informe um email válido'
     }
 
-    if (formulario.telefone && !/^\d{10,11}$/.test(formulario.telefone)) {
-      return 'Telefone deve conter apenas 10 ou 11 dígitos'
+    const telefone = formulario.telefone.trim()
+    const telefoneNormalizado = telefone.replace(/\D/g, '')
+    if (telefone && !/^[\d()+\- ]+$/.test(telefone)) {
+      return 'Telefone deve conter apenas números, espaços, parênteses, + e hífen'
+    }
+
+    if (telefone && !/^\d{10,11}$/.test(telefoneNormalizado)) {
+      return 'Telefone deve conter 10 ou 11 dígitos'
     }
 
     if (formulario.senha && formulario.senha.length < 6) {
@@ -44,7 +50,10 @@ function VolunteerForm({ voluntario, onSubmit, onCancel }) {
       return
     }
 
-    const dados = { ...formulario }
+    const dados = {
+      ...formulario,
+      telefone: formulario.telefone.trim().replace(/\D/g, ''),
+    }
     if (!dados.senha) {
       delete dados.senha
     }

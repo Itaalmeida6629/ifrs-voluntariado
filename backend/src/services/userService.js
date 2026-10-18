@@ -5,6 +5,7 @@ const validateString = require('../utils/validateString')
 const validateTelefone = require('../utils/validateTelefone')
 const validateId = require('../utils/validateId')
 const AppError = require('../utils/appError')
+const normalizarTelefone = require('../utils/normalizarTelefone')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
@@ -33,10 +34,13 @@ function validarSenha(senha) {
 }
 
 function validarTelefoneUsuario(telefone) {
-  if (telefone !== null && telefone !== undefined && !validateTelefone(telefone)) {
-    throw new AppError('Telefone inválido: informe apenas 10 ou 11 dígitos')
+  const telefoneNormalizado = normalizarTelefone(telefone)
+
+  if (telefoneNormalizado !== null && telefoneNormalizado !== undefined && !validateTelefone(telefoneNormalizado)) {
+    throw new AppError('Telefone inválido: use apenas números, espaços, parênteses, + e hífen, com 10 ou 11 dígitos')
   }
-  return telefone || null
+
+  return telefoneNormalizado || null
 }
 
 function normalizarRole(role, usuarioLogado) {

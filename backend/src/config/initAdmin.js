@@ -2,12 +2,14 @@ const bancoDados = require('./database')
 const bcrypt = require('bcryptjs')
 const validateEmail = require('../utils/validateEmail')
 const validateTelefone = require('../utils/validateTelefone')
+const normalizarTelefone = require('../utils/normalizarTelefone')
 
 function configurarAdmin() {
   const nome = process.env.ADMIN_NAME
   const email = process.env.ADMIN_EMAIL
   const senha = process.env.ADMIN_PASSWORD
-  const telefone = process.env.ADMIN_PHONE || null
+  const telefoneInformado = process.env.ADMIN_PHONE
+  const telefone = telefoneInformado ? normalizarTelefone(telefoneInformado) : null
 
   if (!nome || !email || !senha) {
     throw new Error('Nome, email e senha do administrador são obrigatórios')
@@ -21,8 +23,8 @@ function configurarAdmin() {
     throw new Error('A senha do administrador deve ter no mínimo 6 caracteres')
   }
 
-  if (telefone && !validateTelefone(telefone)) {
-    throw new Error('Telefone do administrador inválido: informe apenas 10 ou 11 dígitos')
+  if (telefone !== null && !validateTelefone(telefone)) {
+    throw new Error('Telefone do administrador inválido: use apenas números, espaços, parênteses, + e hífen')
   }
 
   return { nome, email, senha, telefone }

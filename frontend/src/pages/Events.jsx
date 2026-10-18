@@ -15,22 +15,10 @@ function Events() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [mensagem, setMensagem] = useState('')
+  const [atualizacaoEventos, setAtualizacaoEventos] = useState(0)
   const [eventoSelecionado, setEventoSelecionado] = useState(null)
   const [voluntariosInscritos, setVoluntariosInscritos] = useState([])
   const [carregandoInscritos, setCarregandoInscritos] = useState(false)
-
-  const carregarEventos = async () => {
-    try {
-      setCarregando(true)
-      setErro('')
-      const { data } = await api.get('/events')
-      setEventos(data)
-    } catch (error) {
-      setErro(error.response?.data?.message || 'Não foi possível carregar os eventos')
-    } finally {
-      setCarregando(false)
-    }
-  }
 
   useEffect(() => {
     let componenteAtivo = true
@@ -56,7 +44,7 @@ function Events() {
     return () => {
       componenteAtivo = false
     }
-  }, [])
+  }, [atualizacaoEventos])
 
   const abrirFormulario = (evento = null) => {
     setEventoEmEdicao(evento)
@@ -79,7 +67,9 @@ function Events() {
     }
 
     fecharFormulario()
-    await carregarEventos()
+    setCarregando(true)
+    setErro('')
+    setAtualizacaoEventos((valorAtual) => valorAtual + 1)
   }
 
   const excluirEvento = async (eventoId) => {
@@ -91,7 +81,12 @@ function Events() {
       setErro('')
       await api.delete(`/events/${eventoId}`)
       setMensagem('Evento excluído com sucesso')
-      await carregarEventos()
+      if (eventoSelecionado?.id === eventoId) {
+        setEventoSelecionado(null)
+        setVoluntariosInscritos([])
+      }
+      setCarregando(true)
+      setAtualizacaoEventos((valorAtual) => valorAtual + 1)
     } catch (error) {
       setErro(error.response?.data?.message || 'Não foi possível excluir o evento')
     }

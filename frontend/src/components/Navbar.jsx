@@ -29,11 +29,9 @@ function Navbar() {
           <NavLink className="link-navegacao" to="/events">
             Eventos
           </NavLink>
-          {usuario?.role === 'admin' && (
-            <NavLink className="link-navegacao" to="/volunteers">
-              Voluntários
-            </NavLink>
-          )}
+          <NavLink className="link-navegacao" to="/volunteers">
+            {usuario?.role === 'admin' ? 'Voluntários' : 'Meu perfil'}
+          </NavLink>
           <button className="botao-secundario" type="button" onClick={sair}>
             Sair
           </button>

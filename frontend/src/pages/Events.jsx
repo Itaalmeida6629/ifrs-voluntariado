@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/api'
 import EventCard from '../components/EventCard'
 import EventForm from '../components/EventForm'
+import EventVolunteerList from '../components/EventVolunteerList'
 import { useAuth } from '../contexts/useAuth'
 
 function Events() {
@@ -14,7 +15,22 @@ function Events() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [mensagem, setMensagem] = useState('')
-  const [atualizacaoEventos, setAtualizacaoEventos] = useState(0)
+  const [eventoSelecionado, setEventoSelecionado] = useState(null)
+  const [voluntariosInscritos, setVoluntariosInscritos] = useState([])
+  const [carregandoInscritos, setCarregandoInscritos] = useState(false)
+
+  const carregarEventos = async () => {
+    try {
+      setCarregando(true)
+      setErro('')
+      const { data } = await api.get('/events')
+      setEventos(data)
+    } catch (error) {
+      setErro(error.response?.data?.message || 'Não foi possível carregar os eventos')
+    } finally {
+      setCarregando(false)
+    }
+  }
 
   useEffect(() => {
     let componenteAtivo = true
@@ -40,7 +56,7 @@ function Events() {
     return () => {
       componenteAtivo = false
     }
-  }, [atualizacaoEventos])
+  }, [])
 
   const abrirFormulario = (evento = null) => {
     setEventoEmEdicao(evento)
@@ -63,9 +79,7 @@ function Events() {
     }
 
     fecharFormulario()
-    setCarregando(true)
-    setErro('')
-    setAtualizacaoEventos((valorAtual) => valorAtual + 1)
+    await carregarEventos()
   }
 
   const excluirEvento = async (eventoId) => {
@@ -77,10 +91,49 @@ function Events() {
       setErro('')
       await api.delete(`/events/${eventoId}`)
       setMensagem('Evento excluído com sucesso')
-      setCarregando(true)
-      setAtualizacaoEventos((valorAtual) => valorAtual + 1)
+      await carregarEventos()
     } catch (error) {
       setErro(error.response?.data?.message || 'Não foi possível excluir o evento')
+    }
+  }
+
+  const inscreverVoluntario = async (eventoId) => {
+    try {
+      setErro('')
+      await api.post(`/events/${eventoId}/volunteers`)
+      setMensagem('Inscrição realizada com sucesso')
+    } catch (error) {
+      setErro(error.response?.data?.message || 'Não foi possível realizar a inscrição')
+    }
+  }
+
+  const cancelarInscricao = async (eventoId) => {
+    if (!window.confirm('Deseja cancelar sua inscrição neste evento?')) {
+      return
+    }
+
+    try {
+      setErro('')
+      await api.delete(`/events/${eventoId}/volunteers/me`)
+      setMensagem('Inscrição cancelada com sucesso')
+    } catch (error) {
+      setErro(error.response?.data?.message || 'Não foi possível cancelar a inscrição')
+    }
+  }
+
+  const verInscritos = async (evento) => {
+    try {
+      setErro('')
+      setEventoSelecionado(evento)
+      setVoluntariosInscritos([])
+      setCarregandoInscritos(true)
+      const { data } = await api.get(`/events/${evento.id}/volunteers`)
+      setVoluntariosInscritos(data)
+    } catch (error) {
+      setErro(error.response?.data?.message || 'Não foi possível carregar os inscritos')
+      setEventoSelecionado(null)
+    } finally {
+      setCarregandoInscritos(false)
     }
   }
 
@@ -123,9 +176,21 @@ function Events() {
               ehAdmin={ehAdmin}
               onEditar={abrirFormulario}
               onExcluir={excluirEvento}
+              onInscrever={inscreverVoluntario}
+              onCancelar={cancelarInscricao}
+              onVerInscritos={verInscritos}
             />
           ))}
         </div>
+      )}
+
+      {ehAdmin && eventoSelecionado && (
+        <EventVolunteerList
+          evento={eventoSelecionado}
+          voluntarios={voluntariosInscritos}
+          carregando={carregandoInscritos}
+          onFechar={() => setEventoSelecionado(null)}
+        />
       )}
     </section>
   )

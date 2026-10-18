@@ -5,7 +5,7 @@ function formatarData(data) {
   }).format(new Date(data))
 }
 
-function EventCard({ evento, ehAdmin, onEditar, onExcluir }) {
+function EventCard({ evento, ehAdmin, onEditar, onExcluir, onInscrever, onCancelar, onVerInscritos }) {
   return (
     <article className="cartao-evento">
       <div className="cabecalho-evento">
@@ -40,6 +40,20 @@ function EventCard({ evento, ehAdmin, onEditar, onExcluir }) {
           </button>
           <button className="botao-perigo" type="button" onClick={() => onExcluir(evento.id)}>
             Excluir
+          </button>
+          <button className="botao-secundario" type="button" onClick={() => onVerInscritos(evento)}>
+            Ver inscritos
+          </button>
+        </div>
+      )}
+
+      {!ehAdmin && evento.status === 'agendado' && (
+        <div className="acoes-inscricao">
+          <button className="botao-principal" type="button" onClick={() => onInscrever(evento.id)}>
+            Inscrever-se
+          </button>
+          <button className="botao-secundario" type="button" onClick={() => onCancelar(evento.id)}>
+            Cancelar inscrição
           </button>
         </div>
       )}

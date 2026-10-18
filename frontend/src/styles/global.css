@@ -279,6 +279,55 @@ a {
   margin-top: 20px;
 }
 
+.acoes-inscricao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.painel-inscritos {
+  margin-top: 28px;
+  border: 1px solid #dbe3ec;
+  border-radius: 10px;
+  padding: 20px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.cabecalho-painel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cabecalho-painel h2 {
+  margin: 0 0 6px;
+  color: #1f5f8b;
+  font-size: 1.1rem;
+}
+
+.lista-inscritos {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.cartao-inscrito {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.cartao-inscrito span {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
 .botao-perigo {
   border: 0;
   border-radius: 8px;
@@ -412,7 +461,8 @@ a {
 
   .cabecalho-evento,
   .detalhes-evento div,
-  .cartao-voluntario {
+  .cartao-voluntario,
+  .cabecalho-painel {
     align-items: flex-start;
     flex-direction: column;
   }

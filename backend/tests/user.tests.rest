@@ -112,7 +112,7 @@ GET {{baseUrl}}/users
 Authorization: Bearer {{tokenUsuario}}
 
 ### Cadastro de admin sem autenticacao administrativa
-POST {{baseUrl}}/users
+POST {{baseUrl}}/volunteers
 Content-Type: {{contentType}}
 
 {

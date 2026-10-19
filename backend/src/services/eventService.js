@@ -68,11 +68,24 @@ function validarDescricao(descricao) {
   return validarTexto(descricao, { min: 1, max: 200, fieldName: 'descrição' })
 }
 
+/** Regras de negócio para gerenciamento de eventos. */
 class EventService {
+  /**
+   * Lista os eventos cadastrados.
+   *
+   * @returns {Promise<Array<Object>>} Eventos disponíveis.
+   */
   static async getAllEvents() {
     return await EventModel.findAll()
   }
 
+  /**
+   * Busca um evento pelo identificador.
+   *
+   * @param {number|string} id - Identificador do evento.
+   * @returns {Promise<Object>} Evento encontrado.
+   * @throws {AppError} Quando o ID é inválido ou o evento não existe.
+   */
   static async getEventById(id) {
     if (!validateId(id)) {
       throw new AppError('ID do evento inválido')
@@ -85,6 +98,13 @@ class EventService {
     return event
   }
 
+  /**
+   * Cadastra um evento com os dados validados.
+   *
+   * @param {Object} data - Dados do novo evento.
+   * @returns {Promise<Object>} Evento criado.
+   * @throws {AppError} Quando os dados do evento são inválidos.
+   */
   static async createEvent(data) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       throw new AppError('Corpo da requisição é obrigatório')
@@ -120,6 +140,14 @@ class EventService {
     return await EventModel.findById(eventId)
   }
 
+  /**
+   * Atualiza um evento.
+   *
+   * @param {number|string} id - Identificador do evento.
+   * @param {Object} data - Campos que serão atualizados.
+   * @returns {Promise<Object>} Evento atualizado.
+   * @throws {AppError} Quando os dados são inválidos ou o evento não existe.
+   */
   static async updateEvent(id, data) {
     if (!validateId(id)) {
       throw new AppError('ID do evento inválido')
@@ -176,6 +204,13 @@ class EventService {
     return await EventModel.findById(id)
   }
 
+  /**
+   * Remove um evento.
+   *
+   * @param {number|string} id - Identificador do evento.
+   * @returns {Promise<boolean>} Indica se o evento foi removido.
+   * @throws {AppError} Quando o ID é inválido ou o evento não existe.
+   */
   static async deleteEvent(id) {
     if (!validateId(id)) {
       throw new AppError('ID do evento inválido')

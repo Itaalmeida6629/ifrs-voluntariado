@@ -4,7 +4,16 @@ const UserModel = require('../models/userModel')
 const validateId = require('../utils/validateId')
 const AppError = require('../utils/appError')
 
+/** Regras de negócio das inscrições de voluntários em eventos. */
 class EventVolunteerService {
+  /**
+   * Inscreve o voluntário autenticado em um evento.
+   *
+   * @param {number|string} eventoId - Identificador do evento.
+   * @param {Object} usuarioLogado - Usuário autenticado.
+   * @returns {Promise<Object>} Inscrição criada.
+   * @throws {AppError} Quando o usuário não pode se inscrever ou a regra do evento é violada.
+   */
   static async registerVolunteer(eventoId, usuarioLogado) {
     if (!validateId(eventoId)) {
       throw new AppError('ID do evento inválido')
@@ -59,6 +68,13 @@ class EventVolunteerService {
     return await EventVolunteerModel.findByEventAndUser(eventoId, usuarioLogado.userId)
   }
 
+  /**
+   * Lista os voluntários inscritos em um evento.
+   *
+   * @param {number|string} eventoId - Identificador do evento.
+   * @returns {Promise<Array<Object>>} Inscritos do evento.
+   * @throws {AppError} Quando o evento não existe.
+   */
   static async getEventVolunteers(eventoId) {
     if (!validateId(eventoId)) {
       throw new AppError('ID do evento inválido')
@@ -72,6 +88,14 @@ class EventVolunteerService {
     return await EventVolunteerModel.findByEventId(eventoId)
   }
 
+  /**
+   * Cancela a inscrição do usuário autenticado.
+   *
+   * @param {number|string} eventoId - Identificador do evento.
+   * @param {Object} usuarioLogado - Usuário autenticado.
+   * @returns {Promise<boolean>} Indica se a inscrição foi cancelada.
+   * @throws {AppError} Quando o evento, usuário ou inscrição não existe.
+   */
   static async cancelVolunteer(eventoId, usuarioLogado) {
     if (!validateId(eventoId)) {
       throw new AppError('ID do evento inválido')

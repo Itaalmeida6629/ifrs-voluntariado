@@ -1,6 +1,15 @@
 const EventVolunteerService = require('../services/eventVolunteerService')
 
+/** Controladores HTTP relacionados às inscrições em eventos. */
 class EventVolunteerController {
+  /**
+   * Inscreve o usuário autenticado em um evento.
+   *
+   * @param {Object} req - Requisição HTTP com o ID do evento.
+   * @param {Object} res - Resposta HTTP.
+   * @param {Function} next - Próximo middleware.
+   * @returns {Promise<Object>} Resposta com a inscrição criada.
+   */
   static async registerVolunteer(req, res, next) {
     try {
       const { eventoId } = req.params
@@ -11,6 +20,14 @@ class EventVolunteerController {
     }
   }
 
+  /**
+   * Lista os inscritos de um evento.
+   *
+   * @param {Object} req - Requisição HTTP com o ID do evento.
+   * @param {Object} res - Resposta HTTP.
+   * @param {Function} next - Próximo middleware.
+   * @returns {Promise<Object>} Resposta com os inscritos.
+   */
   static async getEventVolunteers(req, res, next) {
     try {
       const { eventoId } = req.params
@@ -21,6 +38,14 @@ class EventVolunteerController {
     }
   }
 
+  /**
+   * Cancela a inscrição do usuário autenticado.
+   *
+   * @param {Object} req - Requisição HTTP com o ID do evento.
+   * @param {Object} res - Resposta HTTP.
+   * @param {Function} next - Próximo middleware.
+   * @returns {Promise<Object>} Resposta HTTP sem conteúdo.
+   */
   static async cancelVolunteer(req, res, next) {
     try {
       const { eventoId } = req.params

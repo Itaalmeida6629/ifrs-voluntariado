@@ -1,10 +1,11 @@
 import js from '@eslint/js'
 import globals from 'globals'
-import { defineConfig } from 'eslint/config'
+import { defineConfig, globalIgnores } from 'eslint/config'
 import eslintPluginPrettier from 'eslint-plugin-prettier'
 import prettier from 'eslint-config-prettier'
 
 export default defineConfig([
+  globalIgnores(['docs/jsdoc']),
   js.configs.recommended,
   {
     files: ['**/*.{js,cjs}'],

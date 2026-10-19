@@ -3,5 +3,6 @@
 **/build/
 **/.env
 **/coverage/
+**/docs/jsdoc/
 **/tests/*.rest
 *.sql

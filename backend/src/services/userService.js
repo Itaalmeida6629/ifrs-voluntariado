@@ -64,7 +64,15 @@ function normalizarRole(role, usuarioLogado) {
   return roleNormalizada
 }
 
+/** Regras de negócio de autenticação e gerenciamento de usuários. */
 class UserService {
+  /**
+   * Autentica um usuário e gera um token JWT.
+   *
+   * @param {Object} data - Email e senha informados no login.
+   * @returns {Promise<{token: string}>} Token de acesso.
+   * @throws {AppError} Quando os dados são inválidos ou a autenticação falha.
+   */
   static async login(data) {
     const erroLogin = validateLogin(data)
     if (erroLogin) {
@@ -90,6 +98,12 @@ class UserService {
     return { token }
   }
 
+  /**
+   * Lista todos os usuários.
+   *
+   * @returns {Promise<Array<Object>>} Usuários cadastrados.
+   * @throws {AppError} Quando nenhum usuário é encontrado.
+   */
   static async getAllUsers() {
     const users = await UserModel.findAll()
     if (users.length === 0) {
@@ -98,6 +112,14 @@ class UserService {
     return users
   }
 
+  /**
+   * Busca um usuário respeitando a permissão do usuário autenticado.
+   *
+   * @param {number|string} id - Identificador do usuário consultado.
+   * @param {Object} usuarioLogado - Dados do usuário autenticado.
+   * @returns {Promise<Object>} Usuário encontrado sem senha.
+   * @throws {AppError} Quando o ID é inválido, o acesso é negado ou o usuário não existe.
+   */
   static async getUserById(id, usuarioLogado) {
     if (!validateId(id)) {
       throw new AppError('ID do usuário inválido')
@@ -121,6 +143,13 @@ class UserService {
     return usuarioSemSenha
   }
 
+  /**
+   * Busca um usuário pelo email sem expor o hash da senha.
+   *
+   * @param {string} email - Email do usuário.
+   * @returns {Promise<Object>} Usuário encontrado sem senha.
+   * @throws {AppError} Quando o email é inválido ou o usuário não existe.
+   */
   static async findUserByEmail(email) {
     const emailNormalizado = validarEmailUsuario(email)
     const user = await UserModel.findByEmail(emailNormalizado)
@@ -133,6 +162,14 @@ class UserService {
     return usuarioSemSenha
   }
 
+  /**
+   * Cadastra um usuário ou voluntário.
+   *
+   * @param {Object} data - Dados do novo usuário.
+   * @param {Object|undefined} usuarioLogado - Usuário autenticado, quando aplicável.
+   * @returns {Promise<Object>} Usuário criado sem senha.
+   * @throws {AppError} Quando os dados são inválidos ou o email já existe.
+   */
   static async createUser(data, usuarioLogado) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
       throw new AppError('Corpo da requisição é obrigatório')
@@ -161,6 +198,15 @@ class UserService {
     return await UserModel.findById(userId)
   }
 
+  /**
+   * Atualiza os dados permitidos de um usuário.
+   *
+   * @param {number|string} id - Identificador do usuário.
+   * @param {Object} data - Campos que serão atualizados.
+   * @param {Object} usuarioLogado - Usuário autenticado.
+   * @returns {Promise<Object>} Usuário atualizado sem senha.
+   * @throws {AppError} Quando os dados são inválidos, o acesso é negado ou o usuário não existe.
+   */
   static async updateUser(id, data, usuarioLogado) {
     if (!validateId(id)) {
       throw new AppError('ID do usuário inválido')
@@ -218,6 +264,13 @@ class UserService {
     return await UserModel.findById(id)
   }
 
+  /**
+   * Remove um usuário.
+   *
+   * @param {number|string} id - Identificador do usuário.
+   * @returns {Promise<boolean>} Indica se o usuário foi removido.
+   * @throws {AppError} Quando o ID é inválido ou o usuário não existe.
+   */
   static async deleteUser(id) {
     if (!validateId(id)) {
       throw new AppError('ID do usuário inválido')
